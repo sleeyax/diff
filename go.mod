@@ -1,4 +1,4 @@
-module tshaka.dev/x/diff
+module github.com/sleeyax/go-diff
 
 go 1.22.0
 
