@@ -11,6 +11,13 @@ import (
 	"strings"
 )
 
+// ANSI escape codes for colors
+const (
+	Red   = "\033[31m"
+	Green = "\033[32m"
+	Reset = "\033[0m"
+)
+
 // A pair is a pair of values tracked for both the x and y side of a diff.
 // It is typically a pair of line indexes.
 type pair struct{ x, y int }
@@ -44,6 +51,15 @@ type pair struct{ x, y int }
 // to wait longer (to be patient) for the diff, meaning that it is a slower algorithm,
 // when in fact the algorithm is faster than the standard one.
 func Diff(oldName string, old []byte, newName string, new []byte) []byte {
+	return diff(oldName, old, newName, new, false)
+}
+
+// DiffColored returns Diff but colored.
+func DiffColored(oldName string, old []byte, newName string, new []byte) []byte {
+	return diff(oldName, old, newName, new, true)
+}
+
+func diff(oldName string, old []byte, newName string, new []byte, colored bool) []byte {
 	if bytes.Equal(old, new) {
 		return nil
 	}
@@ -92,11 +108,19 @@ func Diff(oldName string, old []byte, newName string, new []byte) []byte {
 		// Emit the mismatched lines before start into this chunk.
 		// (No effect on first sentinel iteration, when start = {0,0}.)
 		for _, s := range x[done.x:start.x] {
-			ctext = append(ctext, "-"+s)
+			if colored {
+				ctext = append(ctext, Red+"-"+s+Reset)
+			} else {
+				ctext = append(ctext, "-"+s)
+			}
 			count.x++
 		}
 		for _, s := range y[done.y:start.y] {
-			ctext = append(ctext, "+"+s)
+			if colored {
+				ctext = append(ctext, Green+"+"+s+Reset)
+			} else {
+				ctext = append(ctext, "+"+s)
+			}
 			count.y++
 		}
 
